@@ -1,6 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { logger, reimburse, payroll_period, find_payroll_period, attendance } = require('./controller.js')
+const { logger, reimburse, payroll_period, find_payroll_period, attendance, overtime, finalized_overtime, find_overtime } = require('./controller.js')
 const { countWeekend, countDays, countHours } = require('./helper.js')
 const { v4 } = require('uuid');
 
@@ -135,17 +135,39 @@ router.post('/overtime', async (req, res) => {
         }
     }
 
-    const overtime = overtime(999, start, end, hours);
+    const overtime_ = await overtime(999, start, end, hours);
 
     return res.status(200).json({
         ok: true,
-        message: countHours(start, end)
+        message: overtime_
+    })
+})
+
+router.post('/final-overtime', async (req, res) => {
+
+    // const account_id = req.body.account_id;
+    const overtime_id = req.body.overtime_id;
+
+    const f_overtime = await find_overtime(999, overtime_id);
+
+    if (!f_overtime) {
+        return res.status(404).json({
+            ok: false,
+            message: 'Overtime Not Found!'
+        });
+    }
+
+    const overtime = await finalized_overtime(999, overtime_id);
+
+    return res.status(200).json({
+        ok: true,
+        message: f_overtime
     })
 })
 
 router.use((req, res) => {
     res.status(404).json({
-        error: 'Not Found'
+        message: 'Not Found'
     });
 });
 
