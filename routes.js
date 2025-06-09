@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
-const { logger, reimburse, payroll_period, find_payroll_period, attendance, overtime, finalized_overtime, find_overtime, find_payroll_period_id, finalized_payroll_period } = require('./controller.js')
-const { countWeekend, countDays, countHours, after_five_pm } = require('./helper.js')
+const { logger, reimburse, payroll_period, find_payroll_period, attendance, overtime, finalized_overtime, find_overtime, find_payroll_period_id, finalized_payroll_period } = require('./controller/controller.js')
+const { countWeekend, countDays, countHours, after_five_pm } = require('./helper/helper.js')
 const { v4 } = require('uuid');
 
 // middleware logger

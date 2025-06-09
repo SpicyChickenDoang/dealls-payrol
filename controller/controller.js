@@ -1,6 +1,6 @@
 
-const { queries } = require("./db_model.js");
-const { timestamp } = require("./helper.js");
+const { queries } = require("./model/db_model.js");
+const { timestamp } = require("./helper/helper.js");
 
 exports.logger = async (ip, url, body, uuid) => {
     const res = await queries(`INSERT INTO logs (ip_address, endpoint, body, request_id) VALUES ($1, $2, $3, $4)`, [ip, url, body, uuid]);
