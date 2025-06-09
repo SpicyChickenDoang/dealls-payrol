@@ -50,3 +50,19 @@ exports.reimburse = async (account_id, amount, reason) => {
         return false
     }
 }
+
+exports.payroll_period = async (start, end, created_by = 999) => {
+    const query = {
+        text: `INSERT INTO payroll_period (start_period, end_period, created_by) VALUES ($1, $2, $3)`,
+        values: [start, end, created_by]
+    }
+
+    try {
+        const res = await client.query(query);
+        console.log('Query result:', res.rows);
+        return true
+    } catch (err) {
+        console.error('Query error:', err);
+        return false
+    }
+}

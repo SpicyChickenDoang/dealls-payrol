@@ -1,4 +1,3 @@
-DROP TABLE logs;
 create TABLE logs (
 	id serial PRIMARY key,
 	ip_address VARCHAR(255) not null,
@@ -25,14 +24,11 @@ CREATE TABLE reimburse (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-payroll_period: id, start, end, 
-                    status(active: 1, inactive/over: 2), 
-                    created_at, created_by
 CREATE TABLE payroll_period (
   id SERIAL PRIMARY KEY,
   start_period Date NOT NULL,
   end_period Date NOT NULL,
-  status SMALLINT DEFAULT 0,
+  status SMALLINT DEFAULT 1,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   created_by INT NOT NULL
 );
