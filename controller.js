@@ -1,104 +1,32 @@
-const mysql = require('mysql2')
-const {config} = require('../utils/config')
-const bcrypt = require('bcrypt')
-const jwt = require('jsonwebtoken')
-require('dotenv').config()
-const {setUserToken, deleteUserToken} = require('../helper-functions/redis-helper')
 
-// const Connection = require("mysql2/typings/mysql/lib/Connection")
+const { _insert } = require("./db_model.js");
+const { timestamp } = require("./helper.js");
 
-exports.createUser = function (req, res) {
-    const connection = mysql.createConnection(config)
-
-    let sql = `insert into user_data(userName, userEmail, userPassword) values (? ,?, ?)`
-    let sqlInsert = [req.body.name, req.body.email, req.body.password]
-    connection.query(sql, sqlInsert, (err, results) => {
-        if (err) res.send(err.message)
-
-        res.json(results)
-    })
-
-    connection.end(() => {
-        console.log('mysql connection closed');
-    })
-
+exports.logger = async (ip, url, body, uuid) => {
+    const res = await _insert(`INSERT INTO logs (ip_address, endpoint, body, request_id) VALUES ($1, $2, $3, $4)`, [ip, url, body, uuid]);
+    return res.status ? true : false;
 }
 
-exports.loginUser = function (req, res) {
-    //   this will login the user
-
-    const connection = mysql.createConnection(config)
-    let sql = 'select * from user_data where userEmail = ?'
-
-    connection.query(sql, req.body.email, (err, results) => {
-      if(err) return res.send(err.message)
-
-      if(bcrypt.compareSync(req.body.password, results[0].userPassword)){
-        const userResults = {
-            email: results[0].userEmail,
-            password: results[0].userPassword
-        }
-        const userToken = jwt.sign(userResults, process.env.ACCESS_TOKEN_KEY, {expiresIn: '24h'})
-
-        setUserToken(req.body.email, userToken)
-        res.json({
-            message: 'logged in',
-            accessToken: userToken
-        })
-      }else{
-        res.json("no access")
-      }
-    })
-
-    connection.end(() => {
-        console.log('mysql connection closed');
-    })
+exports.reimburse = async (account_id, amount, reason) => {
+    const res = await _insert(`INSERT INTO reimburse (account_id, amount, reason) VALUES ($1, $2, $3)`, [account_id, amount, reason]);
+    return res.status ? true : false;
 }
 
-exports.getAllPerson = (req, res) => {
-
-    const accessToken = req.body.access
-    console.log(accessToken);
-
-    const connection = mysql.createConnection(config)
-
-    let sql = 'select * from user_data;'
-
-    connection.query(sql, (err, results) => {
-        if (err) res.json(err.message)
-
-        
-        res.json(results)
-
-    })
-
-    connection.end(() => {
-        console.log('mysql connection closed');
-    })
-    // connection.destroy()
-
+exports.payroll_period = async (start, end, created_by = 999) => {
+    const res = await _insert(`INSERT INTO payroll_period (start_period, end_period, created_by) VALUES ($1, $2, $3)`, [start, end, created_by]);
+    return res.status ? true : false;
 }
 
-exports.logoutUser = (req, res) => {
-
-    deleteUserToken(req.body.access.email)
-    res.send('Token Deleted')
-
+exports.find_payroll_period = async (time = null) => {
+    return await _insert(`SELECT * FROM payroll_period WHERE $1 BETWEEN start_period AND end_period AND status = 1 LIMIT 1`, [time.substring(0, 10)]);
 }
 
-exports.redirect = (req, res) => {
-    console.log('redirected to google')
-    // req.redirect = "redirected to google from local 3000"
-    res.redirect('https://www.google.com/')
+exports.attendance = async (account_id, payroll_id, types) => {
+    const res = await _insert(`INSERT INTO attendance (account_id, payroll_period_id, types) VALUES ($1, $2, $3)`, [account_id, payroll_id, types]);
+    return res.status ? true : false;
 }
 
-const start = new Date('2025-06-01');
-const end = new Date('2025-06-25');
-
-// Calculate difference in milliseconds
-const diffTime = end - start;
-
-// Convert to days (ms → sec → min → hr → day)
-const diffDays = diffTime / (1000 * 60 * 60 * 24) + 1; // +1 for inclusive
-
-console.log(`Total days: ${diffDays}`); // Output: 25
+exports.overtime = async (account_id, start_time, end_time, count) => {
+    const res = await _insert(`INSERT INTO overtime (account_id, start_ot, end_ot, count_ot, status ) VALUES ($1, $2, $3, $4, $5)`, [account_id, start_time, end_time, count, 'proposed']);
+    return res.status ? true : false;
+}
