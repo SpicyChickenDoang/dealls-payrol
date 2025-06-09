@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
-const { logger, reimburse, payroll_period, find_payroll_period, attendance, overtime, finalized_overtime, find_overtime } = require('./controller.js')
-const { countWeekend, countDays, countHours } = require('./helper.js')
+const { logger, reimburse, payroll_period, find_payroll_period, attendance, overtime, finalized_overtime, find_overtime, find_payroll_period_id, finalized_payroll_period } = require('./controller.js')
+const { countWeekend, countDays, countHours, after_five_pm } = require('./helper.js')
 const { v4 } = require('uuid');
 
 // middleware logger
@@ -27,7 +27,18 @@ router.post('/reimburse', async (req, res) => {
         })
     }
 
-    const reimbursed = await reimburse(0, amount, reason);
+    const payroll = await find_payroll_period(time_to_check);
+
+    if (!payroll) {
+        return res.status(400).json({
+            ok: false,
+            message: `Payroll Period not found!`
+        })
+    }
+
+    const payroll_period_id = payroll.data[0].id;
+
+    const reimbursed = await reimburse(0, amount, reason, payroll_period_id);
 
     return res.status(200).json({
         ok: true,
@@ -35,7 +46,7 @@ router.post('/reimburse', async (req, res) => {
     })
 })
 
-router.post('/payroll-period', async (req, res) => {
+router.post('/admin/payroll-period', async (req, res) => {
     const start_date = req.body.start_date;
     const end_date = req.body.end_date;
 
@@ -83,10 +94,10 @@ router.post('/attendance', async (req, res) => {
         })
     }
 
-    const payroll_id = payroll.data[0].id;
+    const payroll_period_id = payroll.data[0].id;
     let clock = clockin ? 1 : 2;
 
-    const success = attendance(999, payroll_id, clock)
+    const success = attendance(999, payroll_period_id, clock)
 
     return res.status(200).json({
         ok: true,
@@ -125,6 +136,14 @@ router.post('/overtime', async (req, res) => {
         })
     }
 
+    const is_after_five = after_five_pm(start);
+    if (!is_after_five) {
+        return res.status(422).json({
+            ok: false,
+            message: `Start Time should be after 5 PM`
+        })
+    }
+
     const hours = countHours(start, end);
     if (hours > 3 || hours < 1) {
         if (start >= end) {
@@ -135,7 +154,18 @@ router.post('/overtime', async (req, res) => {
         }
     }
 
-    const overtime_ = await overtime(999, start, end, hours);
+    const payroll = await find_payroll_period(start);
+
+    if (!payroll) {
+        return res.status(400).json({
+            ok: false,
+            message: `Payroll Period not found!`
+        })
+    }
+
+    const payroll_period_id = payroll.data[0].id;
+
+    const overtime_ = await overtime(999, start, end, hours, payroll_period_id);
 
     return res.status(200).json({
         ok: true,
@@ -161,7 +191,28 @@ router.post('/final-overtime', async (req, res) => {
 
     return res.status(200).json({
         ok: true,
-        message: f_overtime
+        message: overtime
+    })
+})
+
+router.post('/admin/payroll', async (req, res) => {
+    const payroll_period_id = req.body.payroll_period_id;
+
+    const payroll = await find_payroll_period_id(payroll_period_id);
+
+    if (!payroll) {
+        return res.status(400).json({
+            ok: false,
+            message: `Payroll Period not found!`
+        })
+    }
+    const period_id = payroll.data[0].id;
+
+    const f_payroll_period = finalized_payroll_period(period_id)
+
+    return res.status(200).json({
+        ok: true,
+        message: `Payroll Processed!`
     })
 })
 

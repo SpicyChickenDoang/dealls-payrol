@@ -7,6 +7,14 @@ exports.timestamp = () => {
     return new Date();
 }
 
+exports.after_five_pm = (time) => {
+    const date = new Date(time);
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+
+    return hours > 17 || (hours === 17 && minutes > 0);
+}
+
 exports.isWeekend = () => {
     let today = new Date();
     if (today.getDay() == 6 || today.getDay() == 0) return true;

@@ -7,8 +7,8 @@ exports.logger = async (ip, url, body, uuid) => {
     return res.status ? true : false;
 }
 
-exports.reimburse = async (account_id, amount, reason) => {
-    const res = await queries(`INSERT INTO reimburse (account_id, amount, reason) VALUES ($1, $2, $3)`, [account_id, amount, reason]);
+exports.reimburse = async (account_id, amount, reason, payroll_period_id) => {
+    const res = await queries(`INSERT INTO reimburse (account_id, amount, reason, payroll_period_id) VALUES ($1, $2, $3, $4)`, [account_id, amount, reason, payroll_period_id]);
     return res.status ? true : false;
 }
 
@@ -26,8 +26,8 @@ exports.attendance = async (account_id, payroll_id, types) => {
     return res.status ? true : false;
 }
 
-exports.overtime = async (account_id, start_time, end_time, count) => {
-    const res = await queries(`INSERT INTO overtime (created_by, start_ot, end_ot, count_ot, status, updated_by ) VALUES ($1, $2, $3, $4, $5, $1)`, [account_id, start_time, end_time, count, 0]);
+exports.overtime = async (account_id, start_time, end_time, count, payroll_period_id) => {
+    const res = await queries(`INSERT INTO overtime (created_by, start_ot, end_ot, count_ot, status, updated_by, payroll_period_id ) VALUES ($1, $2, $3, $4, $5, $1, $6)`, [account_id, start_time, end_time, count, 0, payroll_period_id]);
     return res.status ? true : false;
 }
 
@@ -38,7 +38,14 @@ exports.finalized_overtime = async (account_id, overtime_id) => {
 
 exports.find_overtime = async (account_id, overtime_id) => {
     const overtime =  await queries(`SELECT * FROM overtime WHERE created_by = $1 AND id = $2 AND status = $3`, [account_id, overtime_id, 0]);
-    
     return overtime.data.length > 0;
-    
+}
+
+exports.find_payroll_period_id = async (payroll_period_id) => {
+    return await queries(`SELECT * FROM payroll_period WHERE $1 LIMIT 1`, [payroll_period_id]);
+}
+
+exports.finalized_payroll_period = async (payroll_period_id) => {
+    const res = await queries(`UPDATE payroll_period SET status = $1 WHERE id = $2`, [0, payroll_period_id]);
+    return res.status ? true : false;
 }

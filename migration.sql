@@ -15,6 +15,7 @@ CREATE TABLE overtime (
   end_ot TIMESTAMP NOT NULL,
   count_ot INTEGER NOT NULL DEFAULT 0,
   status INTEGER DEFAULT 0,
+  payroll_period_id INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   created_by INT NOT NULL DEFAULT 0,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -26,6 +27,7 @@ CREATE TABLE reimburse (
   account_id INTEGER NOT NULL,
   amount INTEGER NOT NULL,
   reason VARCHAR(255) NOT NULL,
+  payroll_period_id INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -56,5 +58,16 @@ create table attendance (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 )
 
-  payroll: id, account_id, account_id, total_salary, payroll_period, created_at, created_by
-  payslip: id, account_id, type(salary, overtime, reimburse), total, created_at, created_by
+  payroll: id, total_salary, payroll_period_id, created_at, created_by, updated_at, updated_by
+  payslip: id, account_id, type(salary, overtime, reimburse), total, created_at, created_by, updated_at, updated_by
+
+  create table payroll (
+    id SERIAL PRIMARY KEY,
+    total_salary BIGINT NOT NULL DEFAULT 0,
+    payroll_period_id INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by INTEGER NOT NULL
+  )
+
