@@ -18,7 +18,7 @@ exports.queries = async (query, values = []) => {
         status = true;
 
     } catch (err) {
-        // console.error('Query error:', err);
+        console.error('Query error:', err);
         data = err;
         status = false;
     }

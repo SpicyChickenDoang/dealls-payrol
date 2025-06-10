@@ -4,7 +4,7 @@ const { logger, reimburse, payroll_period,
     find_payroll_period, attendance, overtime,
     finalized_overtime, find_overtime, find_payroll_period_id,
     finalized_payroll_period, get_accounts, get_employee_attendance,
-    get_employee_reimbursements, get_employee_overtimes } = require('./controller/controller.js')
+    get_employee_reimbursements, get_employee_overtimes, insert_payslip } = require('./controller/controller.js')
 const { countWeekend, countDays, countHours, after_five_pm, currentDate, timestamp } = require('./helper/helper.js')
 const { v4 } = require('uuid');
 const dayjs = require('dayjs');
@@ -217,36 +217,61 @@ router.post('/admin/payroll', async (req, res) => {
     let weekends = countWeekend(start, end); // total weekend periode
     let weekdays = days - weekends; // total hari kerja
 
-    let attendances, reimbursements, overtimes;
+    let attendances, reimbursements, overtimes, total_payslip, prorate_obj, total_employee_salaries = 0, overtime_obj, reimburse_obj;
+    // 1 day is 8 hours of work time
+
+    const { process_attendance, process_overtime, process_reimburse } = require('./helper/payroll.js');
 
     for (const account of accounts.data) {
         attendances = await get_employee_attendance(account.id, payroll.id);
-        if (attendances.data.length > 0) {
-            console.log('AT:', attendances.data[0]);
-        } else {
-            continue;
+        if (attendances.data.length === 0) continue;
+
+        prorate_obj = process_attendance(attendances.data.length, weekdays, account.salary);
+        await insert_payslip(account.id, payroll.id, prorate_obj, 1, prorate_obj.actual_salary);
+
+        // Process overtime
+        overtimes = await get_employee_overtimes(account.id, payroll.id);
+        if (overtimes.data.length > 0) {
+            overtime_obj = process_overtime(overtimes.data, prorate_obj.hourly);
+            if (overtime_obj.total_overtime > 0) {
+                await insert_payslip(account.id, payroll.id, overtime_obj, 2, overtime_obj.total_overtime);
+            }
         }
 
+        // Process reimbursements
         reimbursements = await get_employee_reimbursements(account.id, payroll.id);
         if (reimbursements.data.length > 0) {
-            console.log('RE:', reimbursements.data[0]);
+            reimburse_obj = process_reimburse(reimbursements.data);
+            if (reimburse_obj.total_reimburse > 0) {
+                await insert_payslip(account.id, payroll.id, reimburse_obj, 3, reimburse_obj.total_reimburse);
+            }
         }
 
-
-        overtimes = await get_employee_attendance(account.id, payroll.id);
-        if (overtimes.data.length > 0) {
-            console.log('OT:', overtimes.data[0]);
-        }
+        total_payslip = Math.ceil(prorate_obj.actual_salary + reimburse_obj.total_reimburse + overtime_obj.total_overtime);
+        total_employee_salaries += total_payslip;
     }
 
-
-    // const f_payroll_period = finalized_payroll_period(payroll.id);
-
-
+    const f_payroll_period = finalized_payroll_period(payroll.id);
 
     return res.status(200).json({
         ok: true,
         message: `Payroll Processed!`
+    })
+})
+
+router.post('/payslip', async (req, res) => {
+
+    return res.status(200).json({
+        ok: true,
+        message: overtime
+    })
+})
+
+router.post('/admin/payroll-summary', async (req, res) => {
+
+    return res.status(200).json({
+        ok: true,
+        message: overtime
     })
 })
 

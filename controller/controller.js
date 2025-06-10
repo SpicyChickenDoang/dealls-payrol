@@ -69,3 +69,8 @@ exports.get_employee_overtimes = async (account_id, payroll_period_id) => {
     const res = await queries(`SELECT * FROM overtime WHERE created_by = $1 AND payroll_period_id = $2 AND status = 1`, [account_id, payroll_period_id]);
     return res.status ? res : res;
 }
+
+exports.insert_payslip = async (account_id, payroll_id, data, types, total = 0) => {
+    const res = await queries(`INSERT INTO payslip (account_id, payroll_period_id, data, types, created_by, updated_by, total) VALUES ($1, $2, $3, $4, $1, $1, $5)`, [account_id, payroll_id, data, types, total]);
+    return res.status ? true : false;
+}
