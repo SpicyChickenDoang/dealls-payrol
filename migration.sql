@@ -71,3 +71,15 @@ create table attendance (
     updated_by INTEGER NOT NULL
   )
 
+  create table payslip (
+    id SERIAL PRIMARY KEY,
+    account_id INTEGER NOT NULL DEFAULT 0,
+    types BIGINT NOT NULL DEFAULT 0,
+    total INT NOT NULL DEFAULT 0,
+    payroll_period_id INT NOT NULL DEFAULT 0,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    created_by INTEGER NOT NULL,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_by INTEGER NOT NULL
+  )
+

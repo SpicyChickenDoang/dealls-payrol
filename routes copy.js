@@ -1,10 +1,6 @@
 const express = require('express')
 const router = express.Router()
-const { logger, reimburse, payroll_period,
-    find_payroll_period, attendance, overtime,
-    finalized_overtime, find_overtime, find_payroll_period_id,
-    finalized_payroll_period, get_accounts, get_employee_attendance,
-    get_employee_reimbursements, get_employee_overtimes } = require('./controller/controller.js')
+const controller = require('./controller/controller.js')
 const { countWeekend, countDays, countHours, after_five_pm, currentDate, timestamp } = require('./helper/helper.js')
 const { v4 } = require('uuid');
 const dayjs = require('dayjs');
@@ -192,7 +188,7 @@ router.post('/final-overtime', async (req, res) => {
 router.post('/admin/payroll', async (req, res) => {
     const payroll_period_id = req.body.payroll_period_id;
 
-    let payroll = await find_payroll_period_id(payroll_period_id);
+    const payroll = await find_payroll_period_id(payroll_period_id);
 
     if (!payroll.data.length) {
         return res.status(400).json({
@@ -200,6 +196,7 @@ router.post('/admin/payroll', async (req, res) => {
             message: `Payroll Period not found!`
         })
     }
+    const period_id = payroll.data[0].id;
 
     const accounts = await get_accounts();
     if (!accounts.data.length) {
@@ -209,38 +206,13 @@ router.post('/admin/payroll', async (req, res) => {
         })
     }
 
-    payroll = payroll.data[0];
-    const start = payroll.start_period;
-    const end = payroll.end_period;
+    accounts.data.forEach(account => {
+        
+    });
 
-    let days = countDays(start, end); // total hari periode
-    let weekends = countWeekend(start, end); // total weekend periode
-    let weekdays = days - weekends; // total hari kerja
+    console.log(accounts);
 
-    let attendances, reimbursements, overtimes;
-
-    for (const account of accounts.data) {
-        attendances = await get_employee_attendance(account.id, payroll.id);
-        if (attendances.data.length > 0) {
-            console.log('AT:', attendances.data[0]);
-        } else {
-            continue;
-        }
-
-        reimbursements = await get_employee_reimbursements(account.id, payroll.id);
-        if (reimbursements.data.length > 0) {
-            console.log('RE:', reimbursements.data[0]);
-        }
-
-
-        overtimes = await get_employee_attendance(account.id, payroll.id);
-        if (overtimes.data.length > 0) {
-            console.log('OT:', overtimes.data[0]);
-        }
-    }
-
-
-    // const f_payroll_period = finalized_payroll_period(payroll.id);
+    // const f_payroll_period = finalized_payroll_period(period_id);
 
 
 

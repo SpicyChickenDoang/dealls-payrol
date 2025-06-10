@@ -13,12 +13,12 @@ exports.queries = async (query, values = []) => {
 
     try {
         const res = await client.query(query_obj);
-        console.log('Query result:', res.rows);
+        // console.log('Query result:', res.rows);
         data = res.rows;
         status = true;
 
     } catch (err) {
-        console.error('Query error:', err);
+        // console.error('Query error:', err);
         data = err;
         status = false;
     }

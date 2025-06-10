@@ -33,7 +33,7 @@ exports.countWeekend = (start_date, end_date) => {
         if (day === 0) sundays++;
     }
 
-    return { saturdays, sundays };
+    return saturdays + sundays;
 }
 
 exports.countDays = (start_date, end_date) => {
