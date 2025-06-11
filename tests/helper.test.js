@@ -1,4 +1,4 @@
-const { afterFivePM, countWeekend, countDays, countHours } = require('./helper');
+const { afterFivePM, countWeekend, countDays, countHours } = require('../helper/helper.js');
 
 test('After 5 PM', () => {
     expect(afterFivePM("2026-09-14 18:20:00")).toBe(true);

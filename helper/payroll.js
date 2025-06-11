@@ -4,7 +4,7 @@ exports.process_attendance = (attendances, weekdays, salary) => {
     let actual_hours, actual_salary = 0;
 
     const work_hours = weekdays * hours_per_day;
-    const hourly = (salary / work_hours).toFixed(2);
+    const hourly = parseFloat(salary / work_hours).toFixed(2);
 
     if (real_attendance == weekdays) {
         actual_salary = salary;
@@ -15,7 +15,7 @@ exports.process_attendance = (attendances, weekdays, salary) => {
 
     actual_salary = parseFloat(actual_salary);
 
-    return { hourly, actual_salary, real_attendance, real_attendance }
+    return { hourly, actual_salary, real_attendance }
 }
 
 exports.process_overtime = (overtimes, hourly) => {

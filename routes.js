@@ -168,7 +168,7 @@ router.post('/overtime', async (req, res) => {
 
     return res.status(200).json({
         ok: true,
-        message: overtime_
+        message: "Overtime propsed success"
     })
 })
 
@@ -190,7 +190,7 @@ router.post('/final-overtime', async (req, res) => {
 
     return res.status(200).json({
         ok: true,
-        message: overtime
+        message: "Overtime closed"
     })
 })
 
