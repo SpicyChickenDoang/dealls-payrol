@@ -12,7 +12,7 @@ exports.reimburse = async (account_id, amount, reason, payroll_period_id) => {
     return res.status ? true : false;
 }
 
-exports.payroll_period = async (start, end, created_by = 999) => {
+exports.payroll_period = async (start, end, created_by) => {
     const res = await queries(`INSERT INTO payroll_period (start_period, end_period, created_by) VALUES ($1, $2, $3)`, [start, end, created_by]);
     return res.status ? true : false;
 }
@@ -50,27 +50,46 @@ exports.finalized_payroll_period = async (payroll_period_id) => {
     return res.status ? true : false;
 }
 
+exports.finalized_payroll = async (total_salary, account_id, payroll_period_id) => {
+    const res = await queries(`INSERT INTO payroll (total_salary, payroll_period_id, created_by, updated_by) VALUES ($1, $2, $3, $3)`, [total_salary, payroll_period_id, account_id]);
+    return res;
+}
+
 exports.get_accounts = async () => {
     const res = await queries(`SELECT * FROM account`);
-    return res.status ? res : res;
+    return res;
 }
 
 exports.get_employee_attendance = async (account_id, payroll_period_id) => {
     const res = await queries(`SELECT * FROM attendance WHERE account_id = $1 AND payroll_period_id = $2`, [account_id, payroll_period_id]);
-    return res.status ? res : res;
+    return res;
 }
 
 exports.get_employee_reimbursements = async (account_id, payroll_period_id) => {
     const res = await queries(`SELECT * FROM reimburse WHERE account_id = $1 AND payroll_period_id = $2`, [account_id, payroll_period_id]);
-    return res.status ? res : res;
+    return res;
 }
 
 exports.get_employee_overtimes = async (account_id, payroll_period_id) => {
     const res = await queries(`SELECT * FROM overtime WHERE created_by = $1 AND payroll_period_id = $2 AND status = 1`, [account_id, payroll_period_id]);
-    return res.status ? res : res;
+    return res;
 }
 
 exports.insert_payslip = async (account_id, payroll_id, data, types, total = 0) => {
     const res = await queries(`INSERT INTO payslip (account_id, payroll_period_id, data, types, created_by, updated_by, total) VALUES ($1, $2, $3, $4, $1, $1, $5)`, [account_id, payroll_id, data, types, total]);
     return res.status ? true : false;
+}
+
+exports.get_payslip = async (account_id, payroll_id) => {
+    const res = await queries(`SELECT * FROM payslip WHERE created_by = $1 AND payroll_period_id = $2`, [account_id, payroll_id]);
+    return res
+}
+
+exports.find_payroll_summary = async (payroll_period_id) => {
+    return await queries(`SELECT * FROM payroll_period WHERE $1 AND status = 1 LIMIT 1`, [payroll_period_id]);
+}
+
+exports.get_full_payslip = async (payroll_id) => {
+    const res = await queries(`SELECT account.id as account_id, account.name, payslip.total, payslip.types FROM payslip LEFT JOIN account ON account.id = payslip.account_id WHERE payroll_period_id = $1`, [payroll_id]);
+    return res
 }
