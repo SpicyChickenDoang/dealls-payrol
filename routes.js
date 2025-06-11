@@ -6,7 +6,7 @@ const { logger, reimburse, payroll_period,
     finalized_payroll_period, get_accounts, get_employee_attendance,
     get_employee_reimbursements, get_employee_overtimes, insert_payslip,
     get_payslip, finalized_payroll, get_full_payslip } = require('./controller/controller.js')
-const { countWeekend, countDays, countHours, after_five_pm, currentDate, timestamp } = require('./helper/helper.js')
+const { countWeekend, countDays, countHours, afterFivePM } = require('./helper/helper.js')
 const { v4 } = require('uuid');
 const dayjs = require('dayjs');
 
@@ -135,7 +135,7 @@ router.post('/overtime', async (req, res) => {
         })
     }
 
-    const is_after_five = after_five_pm(start);
+    const is_after_five = afterFivePM(start);
     if (!is_after_five) {
         return res.status(422).json({
             ok: false,

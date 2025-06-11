@@ -1,13 +1,4 @@
-exports.currentDate = () => {
-    const date = new Date();
-    return (`${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`);
-}
-
-exports.timestamp = () => {
-    return new Date();
-}
-
-exports.after_five_pm = (time) => {
+exports.afterFivePM = (time) => {
     const date = new Date(time);
     const hours = date.getHours();
     const minutes = date.getMinutes();
